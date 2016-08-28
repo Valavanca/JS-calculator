@@ -1,0 +1,57 @@
+
+
+
+// variables
+  $font-fml: Geneva, Arial, Helvetica, sans-serif;
+  $font-sz: 1.1em;
+  $color-tx: #black;
+  $color-bg: #fff;
+
+  $color-prm: #a02b58;
+  $color-prm-darken: darken( $color-prm, 19% );
+
+  $color-scn: #404040;
+  $color-scn-darken: darken($color-scn, 15% );
+  $high-tide: 600px;
+
+
+html,body{
+  font-family: $font-fml;
+  font-size: $font-sz;
+  //line-height: $line-height;
+  color: $color-tx;
+  background-color: $color-bg;
+  margin:0;
+  padding:0;
+  overflow-x:hidden;
+}
+
+#calc-object {
+  margin: 3%;
+  padding: 1%;
+  max-width: 800px;
+}
+#print {
+  margin-bottom: 1%;
+  padding: .4%;
+  background-color: darken( $color-bg, 25% )
+}
+
+.calcs {
+  height: 1.8em;
+}
+
+#calc-buttons {
+  .btn {
+    background-color: $color-prm;
+    border: 2px solid lighten( $color-prm, 5% );
+    border-radius: 0;
+    color: white;
+    vertical-align: middle;
+    font-weight: bold;
+    &:hover {
+      border-bottom: 2px solid $color-prm-darken;
+      background-color: lighten( $color-prm, 5% )
+    }
+  }
+}
