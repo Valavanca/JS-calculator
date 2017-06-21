@@ -10,7 +10,6 @@ function BaseCalculator() {
         return this;
     };
 };
-       
 BaseCalculator.prototype = { // basic operations
     add: function (x) {
         this.level = false;
@@ -58,32 +57,75 @@ var calc = new BaseCalculator(); // ------------------- instance
 
 function WebInterface(){
     this.cl = new BaseCalculator;
+    this.tempCl = this.cl;
+    this.tempFunction;
     this.display = {
         input: '',
         output: ''
     };
+
     var that = this;
     var print = document.getElementById("input");
+    var output = document.getElementById("output");
 
-    [].forEach.call(document.getElementsByClassName("number"), function(el) {    
+    var equal = document.getElementById("equal");
+
+    [].forEach.call(document.getElementsByClassName("number"), function(el) {   // input number
         el.addEventListener("click", function(e) {
             that.display.input += this.innerText;
             print.innerText = that.display.input; 
         })
     });
-    document.getElementById("clear").addEventListener("click", function(e){
+    document.getElementById("clear").addEventListener("click", function(e){ // clear input number
         that.display.input = '';
         print.innerText = 0;
         cl.result = undefined;
     });
     // Methods
-    function getFloatFromInput() {
-        if(cl.result===undefined) {
-            return cl(parseFloat(that.display.input));
+    function useTempFunction(context) {
+         if(!context.tempFunction) {
+            context.tempCl =  context.cl(parseFloat(that.display.input));
+            console.log("init parse", parseFloat(context.display.input));
         } else {
-            return parseFloat(that.display.input)
+            context.tempCl = context.tempFunction.call(context.tempCl, parseFloat(context.display.input));
+            console.log("call - that.temp ::", context.tempCl);
         }
     }
+
+    document.getElementById("plus").addEventListener("click", function(e){                             // +
+        output.innerText += parseFloat(that.display.input) + '+';
+        useTempFunction(that);
+
+        that.tempFunction = that.tempCl.add;
+        /*console.log("that.tempFunction", that.tempFunction);
+        console.log("that.temp", that.tempCl);
+        console.log("result", that.tempCl.result);*/
+
+        that.display.input = '';
+        print.innerText = '+';
+    });
+
+    document.getElementById("minus").addEventListener("click", function(e){                             // -
+        output.innerText += parseFloat(that.display.input) + '-';
+        useTempFunction(that);
+
+        that.tempFunction = that.tempCl.sub;
+
+        that.display.input = '';
+        print.innerText = '-';
+    });
+
+    document.getElementById("equal").addEventListener("click", function(e){ // =
+        useTempFunction(that);
+        output.innerText += (parseFloat(that.display.input)||'') + '=' + that.tempCl.result;
+        print.innerText = '';
+
+        that.tempCl = that.cl;
+        that.tempFunction = null;
+        that.display.input = '';
+    });
+    
+    
 };
 
 WebInterface.prototype = {
