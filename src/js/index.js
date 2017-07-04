@@ -53,9 +53,9 @@ BaseCalculator.prototype = { // basic operations
         return this.result;
     }
 }
-var calc = new BaseCalculator(); // ------------------- instance
 
-function WebInterface(){
+
+function WebInterface() {
     this.cl = new BaseCalculator;
     this.tempCl = this.cl;
     this.tempFunction;
@@ -65,73 +65,110 @@ function WebInterface(){
     };
 
     var that = this;
-    var print = document.getElementById("input");
-    var output = document.getElementById("output");
+    var topLine = document.getElementById("input");
+    var botLine = document.getElementById("output");
 
-    var equal = document.getElementById("equal");
-
-    [].forEach.call(document.getElementsByClassName("number"), function(el) {   // input number
+    //                                                                                                                                                                                      ***********
+    //                                                                                                                                                                                                  Methods
+    //                                                                                                                                                                                      ***********
+    function inputNumbers (el) {   // input number by clicking
         el.addEventListener("click", function(e) {
             that.display.input += this.innerText;
-            print.innerText = that.display.input; 
+            topLine.innerText = that.display.input; 
         })
-    });
-    document.getElementById("clear").addEventListener("click", function(e){ // clear input number
-        that.display.input = '';
-        print.innerText = 0;
-        cl.result = undefined;
-    });
-    // Methods
+    }
+
     function useTempFunction(context) {
          if(!context.tempFunction) {
-            context.tempCl =  context.cl(parseFloat(that.display.input));
-            console.log("init parse", parseFloat(context.display.input));
+            context.tempCl =  context.cl(parseFloat(context.display.input));
+            console.log("Init with ", parseFloat(context.display.input));
         } else {
             context.tempCl = context.tempFunction.call(context.tempCl, parseFloat(context.display.input));
             console.log("call - that.temp ::", context.tempCl);
         }
     }
 
-    document.getElementById("plus").addEventListener("click", function(e){                             // +
-        output.innerText += parseFloat(that.display.input) + '+';
+    [].forEach.call(document.getElementsByClassName("number"), (e) => {
+        inputNumbers(e);
+    });
+    function plus () {             
+        topLine.innerText = '+';                                                             // Plus
+        botLine.innerText += parseFloat(that.display.input) + '+';
+        
         useTempFunction(that);
-
         that.tempFunction = that.tempCl.add;
-        /*console.log("that.tempFunction", that.tempFunction);
-        console.log("that.temp", that.tempCl);
-        console.log("result", that.tempCl.result);*/
-
         that.display.input = '';
-        print.innerText = '+';
-    });
+    }
+    function minus () {
+        topLine.innerText = '-';                                                                             // Minus
+        botLine.innerText += parseFloat(that.display.input) + '-';
 
-    document.getElementById("minus").addEventListener("click", function(e){                             // -
-        output.innerText += parseFloat(that.display.input) + '-';
         useTempFunction(that);
-
         that.tempFunction = that.tempCl.sub;
-
         that.display.input = '';
-        print.innerText = '-';
-    });
+    }
+    function mul () {
+        topLine.innerText = '\u00B7';                                                                    // Multiplication
+        botLine.innerText += parseFloat(that.display.input) + '\u00B7';
 
-    document.getElementById("equal").addEventListener("click", function(e){ // =
         useTempFunction(that);
-        output.innerText += (parseFloat(that.display.input)||'') + '=' + that.tempCl.result;
-        print.innerText = '';
+        that.tempFunction = that.tempCl.mul;
+        that.display.input = '';
+    }
+    function div () {
+        topLine.innerText = '/';                                                                                   // Division
+        botLine.innerText += parseFloat(that.display.input) + '/';
+
+        useTempFunction(that);
+        that.tempFunction = that.tempCl.div;
+        that.display.input = '';
+    }
+    function equal () { 
+        useTempFunction(that);
+        topLine.innerText = '';
+        botLine.innerText += (parseFloat(that.display.input)||'') + '=' + that.tempCl.result;
 
         that.tempCl = that.cl;
         that.tempFunction = null;
         that.display.input = '';
+    }
+    function clear (e) { // clear input number
+        that.display.input = '';
+        topLine.innerText = 0;
+        botLine.innerText  = '';
+        that.cl.result = undefined;
+    }
+
+
+
+    //                                                                                                                                                                                      ***********
+    //                                                                                                                                                                                       Get HTML buttons
+    //                                                                                                                                                                                      ***********
+    document.getElementById("plus").addEventListener("click",  function (){  
+        plus();
+    });
+
+    document.getElementById("minus").addEventListener("click", function() {
+        minus();
+    });
+
+    document.getElementById("multiplic").addEventListener("click", function() {
+        mul();
+    });
+
+    document.getElementById("division").addEventListener("click", function() {
+        div();
+    });
+
+    document.getElementById("equal").addEventListener("click", function() {
+        equal();
+    });
+    document.getElementById("clear").addEventListener("click", (e) => {
+        clear(e);
     });
     
     
 };
 
-WebInterface.prototype = {
-    upd: ()=>{
-
-    }
-};
 
 var interface = new WebInterface();
