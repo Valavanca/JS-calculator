@@ -10,7 +10,6 @@ function BaseCalculator() {
         return this;
     };
 };
-       
 BaseCalculator.prototype = { // basic operations
     add: function (x) {
         this.level = false;
@@ -54,42 +53,144 @@ BaseCalculator.prototype = { // basic operations
         return this.result;
     }
 }
-var calc = new BaseCalculator(); // ------------------- instance
 
-function WebInterface(){
+function WorkFlow(context) {
+    var isOperator = false;
+    this.isDoubleOperator = function () {
+        if(isOperator) {
+            return true;
+        } else {
+            isOperator = true;
+            return false;
+        }
+    },
+    this.allowOperator = function() {
+        if(isOperator==true)
+            isOperator = false;
+    }
+}
+
+
+
+function WebInterface() {
     this.cl = new BaseCalculator;
+    this.workFlow = new WorkFlow();
+    this.tempCl = this.cl(0);
+    this.tempFunction;
     this.display = {
         input: '',
         output: ''
     };
+ 
+    const MAX = 8;
+    
     var that = this;
-    var print = document.getElementById("input");
+    var topLine = document.getElementById("input");
+    var botLine = document.getElementById("output");
 
-    [].forEach.call(document.getElementsByClassName("number"), function(el) {    
-        el.addEventListener("click", function(e) {
-            that.display.input += this.innerText;
-            print.innerText = that.display.input; 
-        })
+    //                                                                                                                                                                                      ***********
+    //                                                                                                                                                                                                  Methods
+    //                                                                                                                                                                                      ***********
+    
+    [].forEach.call(document.getElementsByClassName("number"), (e) => {
+        inputNumbers(e);
     });
-    document.getElementById("clear").addEventListener("click", function(e){
-        that.display.input = '';
-        print.innerText = 0;
-        cl.result = undefined;
-    });
-    // Methods
-    function getFloatFromInput() {
-        if(cl.result===undefined) {
-            return cl(parseFloat(that.display.input));
+    function inputNumbers (el) {   // input number by clicking
+        el.addEventListener("click", (e)=>{inputNum(e.target)})
+    }   
+    function inputNum(el) {
+        if(that.display.input.length>MAX) {
+            return undefined
+        }
+        that.workFlow.allowOperator();
+        that.display.input += el.innerText;
+        topLine.innerText = that.display.input; 
+    }
+
+                                                                                                                                                                                /******** Operations ************/
+    function templateOperator (symbol, fun) {
+        if( that.workFlow.isDoubleOperator()) {
+            return undefined
         } else {
-            return parseFloat(that.display.input)
+            topLine.innerText = symbol;
+            if(that.tempFunction==null) { // сheck that the answer is already given
+                botLine.innerText = parseFloat(that.display.input) + symbol;
+            } else {
+                botLine.innerText += parseFloat(that.display.input) + symbol;
+            }                                                      
+                        
+            useTempFunction(that);
+            that.tempFunction = fun;
+            that.display.input = '';
+        }         
+    }
+    let operator =  {
+        minus: ()=>{return templateOperator('-', that.tempCl.sub)},
+        plus: ()=>{return templateOperator('+', that.tempCl.add)},
+        mul: ()=>{return templateOperator('\u00B7', that.tempCl.mul)},
+        div: ()=>{return templateOperator('/', that.tempCl.div)},
+     }
+    function useTempFunction(context) {
+         if(!context.tempFunction) {
+            context.tempCl =  context.cl(parseFloat(context.display.input));
+            console.log("Init with ", parseFloat(context.display.input));
+        } else {
+            context.tempCl = context.tempFunction.call(context.tempCl, parseFloat(context.display.input)||0);
+            console.log("call - that.temp ::", context.tempCl);
         }
     }
-};
 
-WebInterface.prototype = {
-    upd: ()=>{
+    function equal () { 
+        that.workFlow.allowOperator();
+        useTempFunction(that);
+        topLine.innerText = '';
+        botLine.innerText = getResult(botLine);
 
+        that.tempCl = that.cl(0);
+        that.tempFunction = null;
+        that.display.input = '';
     }
+    function clear (e) { // clear input number
+        that.workFlow.allowOperator();
+        that.display.input = '';
+        topLine.innerText = 0;
+        botLine.innerText  = '';
+        that.cl.result = undefined;
+    }
+    function getResult(histoty) {
+        let result = histoty.innerText + (parseFloat(that.display.input)||'') + '=' + parseFloat(that.tempCl.result.toFixed(6));
+        return !!(result.toString().length>MAX*3) ? "Exceeded limit!" : result
+    }
+
+    //                                                                                                                                                                                      ***********
+    //                                                                                                                                                                                       Get HTML buttons
+    //                                                                                                                                                                                      ***********
+    document.getElementById("plus").addEventListener("click",  function (){
+        operator.plus();
+    });
+
+    document.getElementById("minus").addEventListener("click", function() {
+        operator.minus();
+    });
+
+    document.getElementById("multiplic").addEventListener("click", function() {
+        operator.mul();
+    });
+
+    document.getElementById("division").addEventListener("click", function() {
+        operator.div();
+    });
+
+    document.getElementById("equal").addEventListener("click", function() {
+        equal();
+    });
+    document.getElementById("clear").addEventListener("click", (e) => {
+        clear(e);
+    });
+    
+    
 };
 
-var interface = new WebInterface();
+
+
+var calculator = new WebInterface();
